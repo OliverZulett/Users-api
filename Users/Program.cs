@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Users.Models.Data;
 using Users.Models.Repository;
+using Users.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ builder.Services.AddDbContext<UsersContext>(options =>
 });
 
 builder.Services.AddTransient<IUserRepository, UserRepository>();
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 

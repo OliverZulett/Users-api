@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections;
 using Users.Models.Data;
 using Users.Models.Repository;
+using Users.Services;
 
 namespace Users.Controllers
 {
@@ -10,23 +10,26 @@ namespace Users.Controllers
     public class UserController : ControllerBase
     {
         private IUserRepository _userRepository;
-        public UserController(IUserRepository userRepository)
+        private IUserService _userService;
+
+        public UserController(IUserRepository userRepository, IUserService userService)
         {
             _userRepository = userRepository;
+            _userService = userService;
         }
 
         [HttpGet]
         [ActionName(nameof(GetUserAsync))]
         public IEnumerable<User> GetUserAsync() 
         {
-            return _userRepository.GetAllUsers();
+            return _userService.GetAllUsers();
         }
 
         [HttpGet("{id}")]
         [ActionName(nameof(GetUserById))]
         public ActionResult<User> GetUserById(int id)
         {
-            var userById = _userRepository.GetUserById(id);
+            var userById = _userService.GetUserById(id);
             if (userById is null)
             {
                 return NotFound();
@@ -38,7 +41,7 @@ namespace Users.Controllers
         [ActionName(nameof(CreateUserAsync))]
         public async Task<ActionResult<User>> CreateUserAsync(User user)
         {
-            await _userRepository.CreateUserAsync(user);
+            await _userService.CreateUserAsync(user);
             return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
         }
 
@@ -50,7 +53,7 @@ namespace Users.Controllers
             {
                return BadRequest();
             }
-            await _userRepository.updateUserAsync(user);
+            await _userService.UpdateUserAsync(user);
             return NoContent();
         }
 
@@ -58,7 +61,7 @@ namespace Users.Controllers
         [ActionName(nameof(DeleteUser))]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = _userRepository.GetUserById(id);
+            var user = _userService.GetUserById(id);
             if (user is null)
             {
                 return NotFound(nameof(user));
