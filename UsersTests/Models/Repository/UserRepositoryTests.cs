@@ -1,50 +1,126 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Users.Models.Repository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
+using Users.Models.Data;
+using Xunit;
 
 namespace Users.Models.Repository.Tests
 {
-    [TestClass()]
     public class UserRepositoryTests
     {
-        [TestMethod()]
-        public void UserRepositoryTest()
+        private readonly UsersContext _context;
+        private readonly UserRepository _userRepository;
+
+        public UserRepositoryTests()
         {
-            Assert.Fail();
+            // Crea un contexto en memoria para las pruebas
+            var options = new DbContextOptionsBuilder<UsersContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+            _context = new UsersContext(options);
+
+            _userRepository = new UserRepository(_context);
         }
 
-        [TestMethod()]
-        public void CreateUserAsyncTest()
+        [Fact]
+        public async Task CreateUserAsync_ReturnsCreatedUser()
         {
-            Assert.Fail();
+            // Arrange
+            var user = new User { Id = 1, Name = "John" };
+
+            // Act
+            var createdUser = await _userRepository.CreateUserAsync(user);
+
+            // Assert
+            Assert.Equal(user, createdUser);
+            Assert.Contains(user, _context.Users);
         }
 
-        [TestMethod()]
-        public void DeleteUserAsyncTest()
-        {
-            Assert.Fail();
+        [Fact]
+        public async Task DeleteUserAsync_WithNullUser_ReturnsFalse()
+        {1
+            // Act
+            var result = await _userRepository.DeleteUserAsync(null);
+
+            // Assert
+            Assert.False(result);
         }
 
-        [TestMethod()]
-        public void GetAllUsersTest()
+        [Fact]
+        public async Task DeleteUserAsync_WithValidUser_ReturnsTrueAndDeletesUser()
         {
-            Assert.Fail();
+            // Arrange
+            var user = new User { Id = 1, Name = "John" };
+            _context.Users.Add(user);
+            _context.SaveChanges();
+
+            // Act
+            var result = await _userRepository.DeleteUserAsync(user);
+
+            // Assert
+            Assert.True(result);
+            Assert.DoesNotContain(user, _context.Users);
         }
 
-        [TestMethod()]
-        public void GetUserByIdTest()
+        [Fact]
+        public void GetAllUsers_ReturnsAllUsers()
         {
-            Assert.Fail();
+            // Arrange
+            var users = new[]
+            {
+            new User { Id = 1, Name = "John" },
+            new User { Id = 2, Name = "Jane" }
+        };
+            _context.Users.AddRange(users);
+            _context.SaveChanges();
+
+            // Act
+            var result = _userRepository.GetAllUsers();
+
+            // Assert
+            Assert.Equal(users, result);
         }
 
-        [TestMethod()]
-        public void updateUserAsyncTest()
+        [Fact]
+        public void GetUserById_WithValidId_ReturnsUser()
         {
-            Assert.Fail();
+            // Arrange
+            var user = new User { Id = 1, Name = "John" };
+            _context.Users.Add(user);
+            _context.SaveChanges();
+
+            // Act
+            var result = _userRepository.GetUserById(1);
+
+            // Assert
+            Assert.Equal(user, result);
+        }
+
+        [Fact]
+        public void GetUserById_WithInvalidId_ReturnsNull()
+        {
+            // Act
+            var result = _userRepository.GetUserById(1);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdateUserAsync_UpdatesUserInContext()
+        {
+            // Arrange
+            var user = new User { Id = 1, Name = "John" };
+            _context.Users.Add(user);
+            _context.SaveChanges();
+
+            var modifiedUser = new User { Id = 1, Name = "Updated John" };
+
+            // Act
+            await _userRepository.updateUserAsync(modifiedUser);
+
+            // Assert
+            var updatedUser = _context.Users.Find(1);
+            Assert.Equal(modifiedUser.Name, updatedUser.Name);
         }
     }
+
 }
