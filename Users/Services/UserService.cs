@@ -5,8 +5,8 @@ namespace Users.Services
 {
     public class UserService : IUserService
     {
-        protected readonly UserRepository _repository;
-        public UserService(UserRepository userRepository) => _repository = userRepository;
+        protected readonly IUserRepository _repository;
+        public UserService(IUserRepository userRepository) => _repository = userRepository;
         public Task<User> CreateUserAsync(User user)
         {
             return _repository.CreateUserAsync(user);

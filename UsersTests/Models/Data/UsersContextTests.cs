@@ -1,20 +1,49 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Users.Models.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.EntityFrameworkCore;
+using Xunit;
 
 namespace Users.Models.Data.Tests
 {
-    [TestClass()]
     public class UsersContextTests
     {
-        [TestMethod()]
-        public void UsersContextTest()
+        [Fact]
+        public void UsersContext_WithValidOptions_CreatesDbContext()
         {
-            Assert.Fail();
+            // Arrange
+            var options = new DbContextOptionsBuilder<UsersContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            // Act
+            using (var context = new UsersContext(options))
+            {
+                // Assert
+                Assert.NotNull(context); // Context should not be null
+                Assert.IsType<UsersContext>(context); // Context should be of type UsersContext
+            }
+        }
+
+        [Fact]
+        public void UsersContext_WithNullOptions_ThrowsArgumentNullException()
+        {
+            // Arrange, Act, Assert
+            Assert.Throws<ArgumentNullException>(() => new UsersContext(null));
+        }
+
+        [Fact]
+        public void UsersContext_UsersDbSet_IsNotNull()
+        {
+            // Arrange
+            var options = new DbContextOptionsBuilder<UsersContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+
+            // Act
+            using (var context = new UsersContext(options))
+            {
+                // Assert
+                Assert.NotNull(context.Users); // Users DbSet should not be null
+                _ = Assert.IsAssignableFrom<DbSet<User>>(context.Users); // Users DbSet should be of type DbSet<User>
+            }
         }
     }
 }
