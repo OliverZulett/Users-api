@@ -6,7 +6,7 @@ namespace Users.Services
     {
         Task<User> CreateUserAsync(User user);
         Task<bool> DeleteUserAsync(User user);
-        User GetUserById(int id);
+        User GetUserById(Guid id);
         IEnumerable<User> GetAllUsers();
         Task<bool> UpdateUserAsync(User user);
     }

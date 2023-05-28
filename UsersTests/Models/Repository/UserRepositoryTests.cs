@@ -17,6 +17,10 @@ namespace Users.Models.Repository.Tests
                 .Options;
             _context = new UsersContext(options);
 
+            // Limpiar y crear la base de datos en memoria antes de cada caso de prueba
+            _context.Database.EnsureDeleted();
+            _context.Database.EnsureCreated();
+
             _userRepository = new UserRepository(_context);
         }
 
@@ -24,7 +28,7 @@ namespace Users.Models.Repository.Tests
         public async Task CreateUserAsync_ReturnsCreatedUser()
         {
             // Arrange
-            var user = new User { Id = 1, Name = "John" };
+            var user = new User { Name = "name", Surname = "surname", Address = "address", Email = "email", Phone = "phone" };
 
             // Act
             var createdUser = await _userRepository.CreateUserAsync(user);
@@ -36,7 +40,7 @@ namespace Users.Models.Repository.Tests
 
         [Fact]
         public async Task DeleteUserAsync_WithNullUser_ReturnsFalse()
-        {1
+        {
             // Act
             var result = await _userRepository.DeleteUserAsync(null);
 
@@ -48,7 +52,7 @@ namespace Users.Models.Repository.Tests
         public async Task DeleteUserAsync_WithValidUser_ReturnsTrueAndDeletesUser()
         {
             // Arrange
-            var user = new User { Id = 1, Name = "John" };
+            var user = new User { Name = "name", Surname = "surname", Address = "address", Email = "email", Phone = "phone" };
             _context.Users.Add(user);
             _context.SaveChanges();
 
@@ -66,9 +70,9 @@ namespace Users.Models.Repository.Tests
             // Arrange
             var users = new[]
             {
-            new User { Id = 1, Name = "John" },
-            new User { Id = 2, Name = "Jane" }
-        };
+                new User { Name = "name1", Surname = "surname1", Address = "address1", Email = "email1", Phone = "phone1" },
+                new User { Name = "name2", Surname = "surname2", Address = "address2", Email = "email2", Phone = "phone2" }
+            };
             _context.Users.AddRange(users);
             _context.SaveChanges();
 
@@ -83,22 +87,25 @@ namespace Users.Models.Repository.Tests
         public void GetUserById_WithValidId_ReturnsUser()
         {
             // Arrange
-            var user = new User { Id = 1, Name = "John" };
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            var user = new User { Name = "name1", Surname = "surname1", Address = "address1", Email = "email1", Phone = "phone1" };
+            var addedUser = _userRepository.CreateUserAsync(user).GetAwaiter().GetResult(); // Guardar el usuario y obtener el usuario con el ID autogenerado
+            var userId = addedUser.Id; // Obtener el ID autogenerado del usuario guardado
 
             // Act
-            var result = _userRepository.GetUserById(1);
+            var result = _userRepository.GetUserById(userId); // Utilizar el ID autogenerado para buscar el usuario
 
             // Assert
-            Assert.Equal(user, result);
+            Assert.Equal(addedUser, result);
         }
 
         [Fact]
         public void GetUserById_WithInvalidId_ReturnsNull()
         {
+            // Arrange
+            var id = new Guid("97199283-3b08-400f-8dc0-79fcd7ba8a64");
+
             // Act
-            var result = _userRepository.GetUserById(1);
+            var result = _userRepository.GetUserById(id);
 
             // Assert
             Assert.Null(result);
@@ -108,18 +115,24 @@ namespace Users.Models.Repository.Tests
         public async Task UpdateUserAsync_UpdatesUserInContext()
         {
             // Arrange
-            var user = new User { Id = 1, Name = "John" };
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            var user = new User { Name = "name1", Surname = "surname1", Address = "address1", Email = "email1", Phone = "phone1" };
+            var addedUser = await _userRepository.CreateUserAsync(user); // Guardar el usuario y obtener el usuario con el ID autogenerado
+            var userId = addedUser.Id; // Obtener el ID autogenerado del usuario guardado
 
-            var modifiedUser = new User { Id = 1, Name = "Updated John" };
+            // Obtener el usuario existente del contexto
+            var existingUser = _context.Users.Find(userId);
+            existingUser.Name = "name2";
+            existingUser.Surname = "surname2";
+            existingUser.Address = "address2";
+            existingUser.Email = "email2";
+            existingUser.Phone = "phone2";
 
             // Act
-            await _userRepository.updateUserAsync(modifiedUser);
+            await _userRepository.updateUserAsync(existingUser);
 
             // Assert
-            var updatedUser = _context.Users.Find(1);
-            Assert.Equal(modifiedUser.Name, updatedUser.Name);
+            var updatedUser = _userRepository.GetUserById(userId);
+            Assert.Equal(existingUser.Name, updatedUser.Name);
         }
     }
 

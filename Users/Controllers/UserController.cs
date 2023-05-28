@@ -27,7 +27,7 @@ namespace Users.Controllers
 
         [HttpGet("{id}")]
         [ActionName(nameof(GetUserById))]
-        public ActionResult<User> GetUserById(int id)
+        public ActionResult<User> GetUserById(Guid id)
         {
             var userById = _userService.GetUserById(id);
             if (userById is null)
@@ -47,7 +47,7 @@ namespace Users.Controllers
 
         [HttpPut("{id}")]
         [ActionName(nameof(UpdateUser))]
-        public async Task<ActionResult> UpdateUser(int id, User user)
+        public async Task<ActionResult> UpdateUser(Guid id, User user)
         {
             if (id != user.Id)
             {
@@ -59,7 +59,7 @@ namespace Users.Controllers
 
         [HttpDelete("{id}")]
         [ActionName(nameof(DeleteUser))]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(Guid id)
         {
             var user = _userService.GetUserById(id);
             if (user is null)

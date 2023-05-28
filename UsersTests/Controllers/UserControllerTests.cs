@@ -1,50 +1,124 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Users.Controllers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Mvc;
+using Moq;
+using Users.Models.Data;
+using Users.Models.Repository;
+using Users.Services;
+using Xunit;
 
 namespace Users.Controllers.Tests
 {
-    [TestClass()]
     public class UserControllerTests
     {
-        [TestMethod()]
-        public void UserControllerTest()
+        private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<IUserService> _userServiceMock;
+        private readonly UserController _userController;
+
+        public UserControllerTests()
         {
-            Assert.Fail();
+            _userRepositoryMock = new Mock<IUserRepository>();
+            _userServiceMock = new Mock<IUserService>();
+
+            _userController = new UserController(_userRepositoryMock.Object, _userServiceMock.Object);
         }
 
-        [TestMethod()]
-        public void GetUserAsyncTest()
+        [Fact]
+        public void GetUserAsync_ReturnsAllUsersFromService()
         {
-            Assert.Fail();
+            // Arrange
+            var users = new List<User>
+        {
+            new User { Id = new Guid(), Name = "John Doe" },
+            new User { Id = new Guid(), Name = "Jane Smith" }
+        };
+
+            _userServiceMock.Setup(service => service.GetAllUsers()).Returns(users);
+
+            // Act
+            var result = _userController.GetUserAsync();
+
+            // Assert
+            Assert.Equal(users, result);
+            _userServiceMock.Verify(service => service.GetAllUsers(), Times.Once);
         }
 
-        [TestMethod()]
-        public void GetUserByIdTest()
+        [Fact]
+        public async Task CreateUserAsync_ReturnsCreatedAtActionResult()
         {
-            Assert.Fail();
+            // Arrange
+            var user = new User { Id = new Guid(), Name = "John Doe" };
+
+            _userServiceMock.Setup(service => service.CreateUserAsync(It.IsAny<User>())).ReturnsAsync(user);
+
+            // Act
+            var result = await _userController.CreateUserAsync(user);
+
+            // Assert
+            var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+            Assert.Equal(nameof(UserController.GetUserById), createdAtActionResult.ActionName);
+            Assert.Equal(user.Id, createdAtActionResult.RouteValues["id"]);
+            Assert.Equal(user, createdAtActionResult.Value);
         }
 
-        [TestMethod()]
-        public void CreateUserAsyncTest()
+        [Fact]
+        public async Task UpdateUser_ReturnsNoContentResult()
         {
-            Assert.Fail();
+            // Arrange
+            var userId = Guid.NewGuid();
+            var user = new User { Id = userId, Name = "John Doe" };
+
+            _userServiceMock.Setup(service => service.UpdateUserAsync(It.IsAny<User>())).ReturnsAsync(true);
+
+            // Act
+            var result = await _userController.UpdateUser(userId, user);
+
+            // Assert
+            Assert.IsType<NoContentResult>(result);
         }
 
-        [TestMethod()]
-        public void UpdateUserTest()
+        [Fact]
+        public async Task UpdateUser_ReturnsBadRequestResult_WhenIdDoesNotMatch()
         {
-            Assert.Fail();
+            // Arrange
+            var userId = Guid.NewGuid();
+            var user = new User { Id = Guid.NewGuid(), Name = "John Doe" };
+
+            // Act
+            var result = await _userController.UpdateUser(userId, user);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result);
         }
 
-        [TestMethod()]
-        public void DeleteUserTest()
+        [Fact]
+        public async Task DeleteUser_ReturnsNoContentResult()
         {
-            Assert.Fail();
+            // Arrange
+            var userId = Guid.NewGuid();
+            var user = new User { Id = userId, Name = "John Doe" };
+
+            _userServiceMock.Setup(service => service.GetUserById(userId)).Returns(user);
+            _userRepositoryMock.Setup(repo => repo.DeleteUserAsync(user)).ReturnsAsync(true);
+
+            // Act
+            var result = await _userController.DeleteUser(userId);
+
+            // Assert
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task DeleteUser_ReturnsNotFoundResult_WhenUserIsNull()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+
+            _userServiceMock.Setup(service => service.GetUserById(userId)).Returns((User)null);
+
+            // Act
+            var result = await _userController.DeleteUser(userId);
+
+            // Assert
+            Assert.IsType<NotFoundObjectResult>(result);
         }
     }
 }

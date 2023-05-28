@@ -22,7 +22,7 @@ namespace Users.Services
             return _repository.GetAllUsers();
         }
 
-        public User GetUserById(int id)
+        public User GetUserById(Guid id)
         {
             return _repository.GetUserById(id);
         }

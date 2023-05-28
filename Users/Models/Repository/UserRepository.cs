@@ -31,7 +31,7 @@ namespace Users.Models.Repository
             return _context.Users.ToList();
         }
 
-        public User GetUserById(int id)
+        public User GetUserById(Guid id)
         {
             return _context.Users.Find(id);
         }
