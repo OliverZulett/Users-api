@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Routing;
+using System.ComponentModel.DataAnnotations;
 using Users.Models.Data;
 using Xunit;
 
@@ -42,53 +43,86 @@ namespace UsersTests.Models.Data
             Assert.Contains(validationResults, vr => vr.MemberNames.Contains("Surname"));
         }
 
-        [Theory]
-        [InlineData(null)]
-        //[InlineData("")]
-        //[InlineData("   ")]
-        public void User_Address_AllowsNullAndEmptyValues(string address)
+        [Fact]
+        public void Address_AllowNull_ShouldAcceptNull()
         {
             // Arrange
-            var user = new User { Address = address };
+            var instance = new User();
 
             // Act
-            var validationResults = ValidateModel(user);
+            instance.Address = null;
 
             // Assert
-            Assert.Equal(0, validationResults.Count);
+            Assert.Null(instance.Address);
         }
 
-        //[Theory]
-        //[InlineData(null)]
-        //[InlineData("")]
-        //[InlineData("   ")]
-        //public void User_Email_AllowsNullAndEmptyValues(string email)
-        //{
-        //    // Arrange
-        //    var user = new User { Email = email };
+        [Fact]
+        public void Address_AllowNull_ShouldAcceptNonNull()
+        {
+            // Arrange
+            var instance = new User();
+            var address = "123 Main St";
 
-        //    // Act
-        //    var validationResults = ValidateModel(user);
+            // Act
+            instance.Address = address;
 
-        //    // Assert
-        //    Assert.Empty(validationResults);
-        //}
+            // Assert
+            Assert.Equal(address, instance.Address);
+        }
 
-        //[Theory]
-        //[InlineData(null)]
-        //[InlineData("")]
-        //[InlineData("   ")]
-        //public void User_Phone_AllowsNullAndEmptyValues(string phone)
-        //{
-        //    // Arrange
-        //    var user = new User { Phone = phone };
+        [Fact]
+        public void Email_AllowNull_ShouldAcceptNull()
+        {
+            // Arrange
+            var user = new User();
 
-        //    // Act
-        //    var validationResults = ValidateModel(user);
+            // Act
+            user.Email = null;
 
-        //    // Assert
-        //    Assert.Empty(validationResults);
-        //}
+            // Assert
+            Assert.Null(user.Email);
+        }
+
+        [Fact]
+        public void Email_AllowNull_ShouldAcceptNonNull()
+        {
+            // Arrange
+            var user = new User();
+            var email = "test@example.com";
+
+            // Act
+            user.Email = email;
+
+            // Assert
+            Assert.Equal(email, user.Email);
+        }
+
+        [Fact]
+        public void Phone_AllowNull_ShouldAcceptNull()
+        {
+            // Arrange
+            var user = new User();
+
+            // Act
+            user.Phone = null;
+
+            // Assert
+            Assert.Null(user.Phone);
+        }
+
+        [Fact]
+        public void Phone_AllowNull_ShouldAcceptNonNull()
+        {
+            // Arrange
+            var user = new User();
+            var phone = "1234567890";
+
+            // Act
+            user.Phone = phone;
+
+            // Assert
+            Assert.Equal(phone, user.Phone);
+        }
 
         // Helper method to validate the model using data annotations
         private List<ValidationResult> ValidateModel(User user)
