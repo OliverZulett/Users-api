@@ -20,9 +20,18 @@ namespace Users.Controllers
 
         [HttpGet]
         [ActionName(nameof(GetUserAsync))]
-        public IEnumerable<User> GetUserAsync() 
+        [ProducesResponseType(typeof(IEnumerable<User>), 200)]
+        [ProducesResponseType(404)]
+        public IActionResult GetUserAsync()
         {
-            return _userService.GetAllUsers();
+            var users = _userService.GetAllUsers();
+
+            if (users == null || !users.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(users);
         }
 
         [HttpGet("{id}")]
