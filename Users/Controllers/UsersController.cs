@@ -5,14 +5,15 @@ using Users.Services;
 
 namespace Users.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UsersController : ControllerBase
     {
         private IUserRepository _userRepository;
         private IUserService _userService;
 
-        public UserController(IUserRepository userRepository, IUserService userService)
+        public UsersController(IUserRepository userRepository, IUserService userService)
         {
             _userRepository = userRepository;
             _userService = userService;
@@ -60,7 +61,7 @@ namespace Users.Controllers
         {
             if (id != user.Id)
             {
-               return BadRequest();
+                return BadRequest();
             }
             await _userService.UpdateUserAsync(user);
             return NoContent();

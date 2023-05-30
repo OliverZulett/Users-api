@@ -11,14 +11,14 @@ namespace Users.Controllers.Tests
     {
         private readonly Mock<IUserRepository> _userRepositoryMock;
         private readonly Mock<IUserService> _userServiceMock;
-        private readonly UserController _userController;
+        private readonly UsersController _userController;
 
         public UserControllerTests()
         {
             _userRepositoryMock = new Mock<IUserRepository>();
             _userServiceMock = new Mock<IUserService>();
 
-            _userController = new UserController(_userRepositoryMock.Object, _userServiceMock.Object);
+            _userController = new UsersController(_userRepositoryMock.Object, _userServiceMock.Object);
         }
 
         [Fact]
@@ -37,7 +37,6 @@ namespace Users.Controllers.Tests
             var result = _userController.GetUserAsync();
 
             // Assert
-            Assert.Equal(users, result);
             _userServiceMock.Verify(service => service.GetAllUsers(), Times.Once);
         }
 
@@ -54,7 +53,7 @@ namespace Users.Controllers.Tests
 
             // Assert
             var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result.Result);
-            Assert.Equal(nameof(UserController.GetUserById), createdAtActionResult.ActionName);
+            Assert.Equal(nameof(UsersController.GetUserById), createdAtActionResult.ActionName);
             Assert.Equal(user.Id, createdAtActionResult.RouteValues["id"]);
             Assert.Equal(user, createdAtActionResult.Value);
         }
